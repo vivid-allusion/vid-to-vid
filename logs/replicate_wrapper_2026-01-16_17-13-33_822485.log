@@ -1,0 +1,53 @@
+2026-01-16 17:13:33 | INFO     | src.utils.enhanced_logging:setup_dual_logging:55 - Logging configured (verbose=True, file=always)
+2026-01-16 17:13:33 | INFO     | src.utils.verbose_output:log_stage_emoji:95 - 🚀 Validating environment and authentication...
+2026-01-16 17:13:33 | INFO     | src.validation.environment:validate_environment:20 - Starting image-to-video generation
+2026-01-16 17:13:33 | DEBUG    | src.auth.op_auth:load_auth_config_from_path:125 - Loaded auth config from /Users/ruben/Nextcloud/08-DEV/GENAI_VID/img-to-vid/USER-FILES/01.CONFIG/auth_ruben.yaml
+2026-01-16 17:13:33 | INFO     | src.auth.op_auth:get_replicate_api_token_from_op:179 - Retrieving Replicate API token from 1Password (config: auth_ruben.yaml)
+2026-01-16 17:13:39 | DEBUG    | src.auth.op_auth:ensure_op_auth:37 - 1Password session is active.
+2026-01-16 17:13:41 | DEBUG    | src.auth.op_auth:get_secret:99 - Successfully retrieved secret from 1Password item 'API Replicate Ruben'
+2026-01-16 17:13:41 | INFO     | src.auth.op_auth:get_replicate_api_token_from_op:187 - ✅ Successfully retrieved Replicate API token from 1Password
+2026-01-16 17:13:41 | SUCCESS  | __main__:main:31 - Authentication successful
+2026-01-16 17:13:41 | INFO     | src.utils.verbose_output:log_stage_emoji:95 - 📋 Validating input directories...
+2026-01-16 17:13:41 | INFO     | src.validation.environment:validate_input_directories:62 - Input directory and profiles validated successfully
+2026-01-16 17:13:41 | SUCCESS  | __main__:main:36 - Input directory and profiles validated
+2026-01-16 17:13:41 | INFO     | src.utils.verbose_output:log_stage_emoji:95 - ⚙️ Starting video generation matrix...
+2026-01-16 17:13:41 | INFO     | src.utils.verbose_output:log_stage_emoji:95 - 📋 Discovering markdown jobs...
+2026-01-16 17:13:41 | INFO     | src.processing.input_discovery:discover_markdown_jobs:37 - Found 2 markdown job files
+2026-01-16 17:13:41 | DEBUG    | src.processing.input_discovery:discover_markdown_jobs:39 - Job 1: frame0145-260101_220134.md
+2026-01-16 17:13:41 | DEBUG    | src.processing.input_discovery:discover_markdown_jobs:39 - Job 2: frame2144-260101_184704.md
+2026-01-16 17:13:41 | DEBUG    | src.processing.input_discovery:parse_markdown_job:104 - Parsed frame0145-260101_220134.md: prompt='Extreme slow-motion scene of y...', frames=240, url='https://f003.backblazeb2.com/file/wbt-bucket/26010...'
+2026-01-16 17:13:41 | ERROR    | src.processing.input_discovery:parse_markdown_job:117 - Failed to parse frame2144-260101_184704.md: Line 3 (image URL) is empty
+2026-01-16 17:13:41 | INFO     | src.utils.verbose_output:log_stage_emoji:95 - ❌ Fatal error: Invalid markdown job file frame2144-260101_184704.md: Line 3 (image URL) is empty
+2026-01-16 17:13:41 | ERROR    | __main__:main:104 - Full traceback:
+Traceback (most recent call last):
+
+  File "/Users/ruben/Nextcloud/08-DEV/GENAI_VID/img-to-vid/src/processing/input_discovery.py", line 90, in parse_markdown_job
+    raise ValueError("Line 3 (image URL) is empty")
+
+ValueError: Line 3 (image URL) is empty
+
+
+During handling of the above exception, another exception occurred:
+
+
+Traceback (most recent call last):
+
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+
+  File "/Users/ruben/Nextcloud/08-DEV/GENAI_VID/img-to-vid/src/main_verbose.py", line 109, in <module>
+    sys.exit(main())
+
+> File "/Users/ruben/Nextcloud/08-DEV/GENAI_VID/img-to-vid/src/main_verbose.py", line 53, in main
+    results = process_matrix_verbose(context)
+
+  File "/Users/ruben/Nextcloud/08-DEV/GENAI_VID/img-to-vid/src/processing/verbose_processor.py", line 46, in process_matrix_verbose
+    async_client, jobs, active_profiles, run_dir = _setup_processing(context)
+
+  File "/Users/ruben/Nextcloud/08-DEV/GENAI_VID/img-to-vid/src/processing/verbose_processor.py", line 66, in _setup_processing
+    jobs = [parse_markdown_job(md_file) for md_file in markdown_files]
+
+  File "/Users/ruben/Nextcloud/08-DEV/GENAI_VID/img-to-vid/src/processing/input_discovery.py", line 118, in parse_markdown_job
+    raise ValueError(f"Invalid markdown job file {markdown_file.name}: {e}")
+
+ValueError: Invalid markdown job file frame2144-260101_184704.md: Line 3 (image URL) is empty

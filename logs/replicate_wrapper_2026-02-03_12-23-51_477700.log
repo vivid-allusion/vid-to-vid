@@ -1,0 +1,39 @@
+2026-02-03 12:23:51 | INFO     | src.utils.enhanced_logging:setup_dual_logging:55 - Logging configured (verbose=True, file=always)
+2026-02-03 12:23:51 | INFO     | src.utils.verbose_output:log_stage_emoji:120 - 🚀 Validating environment and authentication...
+2026-02-03 12:23:51 | INFO     | src.validation.environment:validate_environment:20 - Starting image-to-video generation
+2026-02-03 12:23:51 | DEBUG    | src.auth.op_auth:load_auth_config_from_path:125 - Loaded auth config from /Users/ruben/Nextcloud/08-DEV/GENAI_VID/vid-to-vid/USER-FILES/01.CONFIG/auth_ruben.yaml
+2026-02-03 12:23:51 | INFO     | src.auth.op_auth:get_replicate_api_token_from_op:179 - Retrieving Replicate API token from 1Password (config: auth_ruben.yaml)
+2026-02-03 12:23:59 | DEBUG    | src.auth.op_auth:ensure_op_auth:37 - 1Password session is active.
+2026-02-03 12:24:00 | DEBUG    | src.auth.op_auth:get_secret:99 - Successfully retrieved secret from 1Password item 'API Replicate Ruben'
+2026-02-03 12:24:00 | INFO     | src.auth.op_auth:get_replicate_api_token_from_op:187 - ✅ Successfully retrieved Replicate API token from 1Password
+2026-02-03 12:24:00 | SUCCESS  | __main__:main:31 - Authentication successful
+2026-02-03 12:24:00 | INFO     | src.utils.verbose_output:log_stage_emoji:120 - 📋 Validating input directories...
+2026-02-03 12:24:00 | INFO     | src.validation.environment:validate_input_directories:58 - Profiles directory validated successfully
+2026-02-03 12:24:00 | SUCCESS  | __main__:main:36 - Input directory and profiles validated
+2026-02-03 12:24:00 | INFO     | src.utils.verbose_output:log_stage_emoji:120 - ⚙️ Starting video generation matrix...
+2026-02-03 12:24:00 | INFO     | src.utils.verbose_output:log_stage_emoji:120 - 📋 Loading video profiles...
+2026-02-03 12:24:00 | INFO     | src.processing.profile_loader:load_single_profile:81 - Loaded profile: WALTZ_WITH_BASHIR (endpoint: kwaivgi/kling-v2.6-motion-control)
+2026-02-03 12:24:00 | INFO     | src.processing.profile_loader:load_single_profile:93 -   → Prompt modifications: suffix='Ultra-sharp focus, 4K.'
+2026-02-03 12:24:00 | INFO     | src.processing.profile_loader:load_single_profile:97 -   → Project: WALTZ WITH BASHIR
+2026-02-03 12:24:00 | INFO     | src.processing.profile_loader:load_single_profile:99 -   → Custom input: /Users/ruben/Nextcloud/01 - PROJECTS/251230_WBT/02_GENERATIONS/@INPUT(vid-to-vid)
+2026-02-03 12:24:00 | INFO     | src.processing.profile_loader:load_single_profile:101 -   → Custom output: /Users/ruben/Nextcloud/01 - PROJECTS/251230_WBT/02_GENERATIONS
+2026-02-03 12:24:00 | INFO     | src.processing.profile_loader:load_active_profiles:143 - Loaded 1 profiles
+2026-02-03 12:24:00 | SUCCESS  | src.processing.verbose_processor:_setup_processing:53 - Loaded 1 profiles
+2026-02-03 12:24:00 | INFO     | src.utils.verbose_output:log_stage_emoji:120 - 📋 Discovering motion control jobs...
+2026-02-03 12:24:00 | INFO     | src.processing.input_discovery:discover_motion_control_jobs:153 - Using custom input directory: /Users/ruben/Nextcloud/01 - PROJECTS/251230_WBT/02_GENERATIONS/@INPUT(vid-to-vid)
+2026-02-03 12:24:00 | INFO     | src.processing.input_discovery:discover_motion_control_jobs:171 - Found 1 motion control job files
+2026-02-03 12:24:00 | DEBUG    | src.processing.input_discovery:discover_motion_control_jobs:173 - Job 1: frame0288-251231_215837.md
+2026-02-03 12:24:00 | DEBUG    | src.processing.input_discovery:parse_motion_control_job:238 - Parsed frame0288-251231_215837.md: prompt='Man sitting in a bar. He is ta...', image='https://f003.backblazeb2.com/file/wbt-bucket/26010...', video='https://f003.backblazeb2.com/file/wbt-bucket/drive...'
+2026-02-03 12:24:00 | SUCCESS  | src.processing.verbose_processor:_setup_processing:63 - Found 1 motion control jobs
+2026-02-03 12:24:00 | INFO     | src.processing.verbose_processor:_setup_processing:78 - 📁 Output: /Users/ruben/Nextcloud/01 - PROJECTS/251230_WBT/02_GENERATIONS/260203_122400_MO-CONTROL
+2026-02-03 12:24:00 | INFO     | src.utils.verbose_output:log_stage_emoji:120 - 📋 Loading inputs for frame0288-251231_215837
+2026-02-03 12:24:00 | INFO     | src.processing.verbose_processor:_process_video_verbose:201 - ════════════════════════════════════════════════════════════
+2026-02-03 12:24:00 | INFO     | src.utils.verbose_output:log_stage_emoji:120 - 🚀 Generating: frame0288-251231_215837_X_WALTZ_WITH_BASHIR
+2026-02-03 12:24:00 | INFO     | src.processing.verbose_processor:_process_video_verbose:203 - 📝 Prompt: Man sitting in a bar. He is talking and holding a glass of beer. Ultra-sharp foc...
+2026-02-03 12:24:00 | INFO     | src.processing.verbose_processor:_process_video_verbose:204 - 🖼️  Image: https://f003.backblazeb2.com/file/wbt-bucket/260108_124500_SELECTS_MOTION/frame0...
+2026-02-03 12:24:00 | INFO     | src.processing.verbose_processor:_process_video_verbose:205 - 🎬 Video Reference: https://f003.backblazeb2.com/file/wbt-bucket/driver/02.driver.mov...
+2026-02-03 12:24:00 | INFO     | src.processing.verbose_processor:_process_video_verbose:206 - ⚙️  Model: kwaivgi/kling-v2.6-motion-control
+2026-02-03 12:24:00 | INFO     | src.processing.verbose_processor:_process_video_verbose:207 - ════════════════════════════════════════════════════════════
+2026-02-03 12:24:00 | INFO     | src.utils.verbose_output:log_stage_emoji:120 - 📡 Sending motion control request to kwaivgi/kling-v2.6-motion-control
+2026-02-03 12:24:00 | DEBUG    | src.api.base_async_client:_create_prediction_with_retry:94 - Creating prediction (attempt 1/3)
+2026-02-03 12:24:01 | INFO     | src.utils.verbose_output:log_stage_emoji:120 - ⏳ Prediction created: sprzrwpm0hrmy0cw4c3v7bnzr4

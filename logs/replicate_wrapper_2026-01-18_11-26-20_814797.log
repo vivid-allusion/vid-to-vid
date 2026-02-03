@@ -1,0 +1,12 @@
+2026-01-18 11:26:20 | INFO     | src.utils.enhanced_logging:setup_dual_logging:55 - Logging configured (verbose=True, file=always)
+2026-01-18 11:26:20 | INFO     | src.utils.verbose_output:log_stage_emoji:120 - 🚀 Validating environment and authentication...
+2026-01-18 11:26:20 | INFO     | src.validation.environment:validate_environment:20 - Starting image-to-video generation
+2026-01-18 11:26:20 | DEBUG    | src.auth.op_auth:load_auth_config_from_path:125 - Loaded auth config from /Users/ruben/Nextcloud/08-DEV/GENAI_VID/img-to-vid/USER-FILES/01.CONFIG/auth_ruben.yaml
+2026-01-18 11:26:20 | INFO     | src.auth.op_auth:get_replicate_api_token_from_op:179 - Retrieving Replicate API token from 1Password (config: auth_ruben.yaml)
+2026-01-18 11:26:29 | DEBUG    | src.auth.op_auth:ensure_op_auth:37 - 1Password session is active.
+2026-01-18 11:26:31 | DEBUG    | src.auth.op_auth:get_secret:99 - Successfully retrieved secret from 1Password item 'API Replicate Ruben'
+2026-01-18 11:26:31 | INFO     | src.auth.op_auth:get_replicate_api_token_from_op:187 - ✅ Successfully retrieved Replicate API token from 1Password
+2026-01-18 11:26:31 | SUCCESS  | __main__:main:31 - Authentication successful
+2026-01-18 11:26:31 | INFO     | src.utils.verbose_output:log_stage_emoji:120 - 📋 Validating input directories...
+2026-01-18 11:26:31 | ERROR    | src.validation.environment:validate_input_directories:53 - No markdown (.md) job files found in /Users/ruben/Nextcloud/08-DEV/GENAI_VID/img-to-vid/USER-FILES/04.INPUT
+2026-01-18 11:26:31 | INFO     | src.utils.verbose_output:log_stage_emoji:120 - ❌ Input validation failed: No markdown (.md) job files found in /Users/ruben/Nextcloud/08-DEV/GENAI_VID/img-to-vid/USER-FILES/04.INPUT

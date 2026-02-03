@@ -1,0 +1,45 @@
+2026-01-21 16:34:05 | INFO     | src.utils.enhanced_logging:setup_dual_logging:55 - Logging configured (verbose=True, file=always)
+2026-01-21 16:34:05 | INFO     | src.utils.verbose_output:log_stage_emoji:120 - 🚀 Validating environment and authentication...
+2026-01-21 16:34:05 | INFO     | src.validation.environment:validate_environment:20 - Starting image-to-video generation
+2026-01-21 16:34:05 | DEBUG    | src.auth.op_auth:load_auth_config_from_path:125 - Loaded auth config from /Users/ruben/Nextcloud/08-DEV/GENAI_VID/vid-to-vid/USER-FILES/01.CONFIG/auth_ruben.yaml
+2026-01-21 16:34:05 | INFO     | src.auth.op_auth:get_replicate_api_token_from_op:179 - Retrieving Replicate API token from 1Password (config: auth_ruben.yaml)
+2026-01-21 16:34:10 | DEBUG    | src.auth.op_auth:ensure_op_auth:37 - 1Password session is active.
+2026-01-21 16:34:11 | DEBUG    | src.auth.op_auth:get_secret:99 - Successfully retrieved secret from 1Password item 'API Replicate Ruben'
+2026-01-21 16:34:11 | INFO     | src.auth.op_auth:get_replicate_api_token_from_op:187 - ✅ Successfully retrieved Replicate API token from 1Password
+2026-01-21 16:34:11 | SUCCESS  | __main__:main:31 - Authentication successful
+2026-01-21 16:34:11 | INFO     | src.utils.verbose_output:log_stage_emoji:120 - 📋 Validating input directories...
+2026-01-21 16:34:11 | INFO     | src.validation.environment:validate_input_directories:58 - Profiles directory validated successfully
+2026-01-21 16:34:11 | SUCCESS  | __main__:main:36 - Input directory and profiles validated
+2026-01-21 16:34:11 | INFO     | src.utils.verbose_output:log_stage_emoji:120 - ⚙️ Starting video generation matrix...
+2026-01-21 16:34:11 | INFO     | src.utils.verbose_output:log_stage_emoji:120 - 📋 Loading video profiles...
+2026-01-21 16:34:11 | INFO     | src.processing.profile_loader:load_single_profile:81 - Loaded profile: WALTZ_WITH_BASHIR (endpoint: kwaivgi/kling-v2.6-motion-control)
+2026-01-21 16:34:11 | INFO     | src.processing.profile_loader:load_single_profile:93 -   → Prompt modifications: suffix='Ultra-sharp focus, 4K.'
+2026-01-21 16:34:11 | INFO     | src.processing.profile_loader:load_single_profile:97 -   → Project: WALTZ WITH BASHIR
+2026-01-21 16:34:11 | INFO     | src.processing.profile_loader:load_single_profile:99 -   → Custom input: /Users/ruben/Nextcloud/01 - PROJECTS/251230_WBT/02_GENERATIONS/@INPUT(vid-to-vid)
+2026-01-21 16:34:11 | INFO     | src.processing.profile_loader:load_single_profile:101 -   → Custom output: /Users/ruben/Nextcloud/01 - PROJECTS/251230_WBT/02_GENERATIONS
+2026-01-21 16:34:11 | INFO     | src.processing.profile_loader:load_active_profiles:143 - Loaded 1 profiles
+2026-01-21 16:34:11 | SUCCESS  | src.processing.verbose_processor:_setup_processing:53 - Loaded 1 profiles
+2026-01-21 16:34:11 | INFO     | src.utils.verbose_output:log_stage_emoji:120 - 📋 Discovering motion control jobs...
+2026-01-21 16:34:11 | INFO     | src.processing.input_discovery:discover_motion_control_jobs:153 - Using custom input directory: /Users/ruben/Nextcloud/01 - PROJECTS/251230_WBT/02_GENERATIONS/@INPUT(vid-to-vid)
+2026-01-21 16:34:11 | INFO     | src.processing.input_discovery:discover_motion_control_jobs:171 - Found 3 motion control job files
+2026-01-21 16:34:11 | DEBUG    | src.processing.input_discovery:discover_motion_control_jobs:173 - Job 1: 06.driver.md
+2026-01-21 16:34:11 | DEBUG    | src.processing.input_discovery:discover_motion_control_jobs:173 - Job 2: frame0252-260105_091900.md
+2026-01-21 16:34:11 | DEBUG    | src.processing.input_discovery:discover_motion_control_jobs:173 - Job 3: frame0395.md
+2026-01-21 16:34:11 | ERROR    | src.processing.input_discovery:parse_motion_control_job:251 - Failed to parse 06.driver.md: Markdown file must have at least 5 lines, found 4 lines
+2026-01-21 16:34:11 | INFO     | src.utils.verbose_output:log_stage_emoji:120 - 💾 Generating reports...
+2026-01-21 16:34:11 | INFO     | src.output.reporter:create_success_report:45 - Success report saved: /Users/ruben/Nextcloud/08-DEV/GENAI_VID/vid-to-vid/USER-FILES/05.OUTPUT/SUCCESS.md
+2026-01-21 16:34:11 | INFO     | src.output.reporter:create_cost_report:112 - Cost report saved: /Users/ruben/Nextcloud/08-DEV/GENAI_VID/vid-to-vid/USER-FILES/05.OUTPUT/cost_report.md
+2026-01-21 16:34:11 | INFO     | src.utils.verbose_output:log_stage_emoji:120 - 💾 Archiving log files...
+2026-01-21 16:34:11 | INFO     | src.utils.cleanup:archive_and_cleanup_logs:46 - Archiving 3 log files to 260121_163411_logs.zip
+2026-01-21 16:34:11 | DEBUG    | src.utils.cleanup:archive_and_cleanup_logs:54 - Added to zip: 260121_133536_logs.zip
+2026-01-21 16:34:11 | DEBUG    | src.utils.cleanup:archive_and_cleanup_logs:54 - Added to zip: cost_report.md
+2026-01-21 16:34:11 | DEBUG    | src.utils.cleanup:archive_and_cleanup_logs:54 - Added to zip: SUCCESS.md
+2026-01-21 16:34:11 | SUCCESS  | src.utils.cleanup:archive_and_cleanup_logs:56 - ✅ Created archive: 260121_163411_logs.zip
+2026-01-21 16:34:11 | SUCCESS  | src.utils.cleanup:archive_and_cleanup_logs:61 - 🗑️  Moved 3 log files to trash
+2026-01-21 16:34:11 | INFO     | src.utils.cleanup:archive_and_cleanup_logs:62 - 📦 Archive location: /Users/ruben/Nextcloud/08-DEV/GENAI_VID/vid-to-vid/USER-FILES/05.OUTPUT/260121_163411_logs.zip
+2026-01-21 16:34:11 | SUCCESS  | __main__:main:69 - ════════════════════════════════════════════════════════════
+2026-01-21 16:34:11 | INFO     | src.utils.verbose_output:log_stage_emoji:120 - ✅ All processing complete!
+2026-01-21 16:34:11 | SUCCESS  | __main__:main:71 - ✅ Success: 0/0 videos
+2026-01-21 16:34:11 | INFO     | __main__:main:72 - 💰 Total cost: $0.00
+2026-01-21 16:34:11 | INFO     | __main__:main:73 - 📁 Output: /Users/ruben/Nextcloud/08-DEV/GENAI_VID/vid-to-vid/USER-FILES/05.OUTPUT
+2026-01-21 16:34:11 | SUCCESS  | __main__:main:74 - ════════════════════════════════════════════════════════════

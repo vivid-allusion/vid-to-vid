@@ -1,0 +1,13 @@
+2026-01-08 19:50:00 | INFO     | src.utils.enhanced_logging:setup_dual_logging:49 - Logging configured (verbose=True, file=always)
+2026-01-08 19:50:00 | INFO     | src.utils.verbose_output:log_stage_emoji:88 - 🚀 Validating environment and authentication...
+2026-01-08 19:50:00 | INFO     | src.validation.environment:validate_environment:20 - Starting image-to-video generation
+2026-01-08 19:50:00 | DEBUG    | src.auth.op_auth:load_auth_config_from_path:125 - Loaded auth config from /Users/ruben/Nextcloud/08_-_DEVELOPMENT/GENAI_VIDEO_TOOLS/img-to-vid_tool/USER-FILES/01.CONFIG/auth_ruben.yaml
+2026-01-08 19:50:00 | INFO     | src.auth.op_auth:get_replicate_api_token_from_op:179 - Retrieving Replicate API token from 1Password (config: auth_ruben.yaml)
+2026-01-08 19:50:01 | DEBUG    | src.auth.op_auth:ensure_op_auth:37 - 1Password session is active.
+2026-01-08 19:50:02 | DEBUG    | src.auth.op_auth:get_secret:99 - Successfully retrieved secret from 1Password item 'API Replicate Ruben'
+2026-01-08 19:50:02 | INFO     | src.auth.op_auth:get_replicate_api_token_from_op:187 - ✅ Successfully retrieved Replicate API token from 1Password
+2026-01-08 19:50:02 | SUCCESS  | __main__:main:29 - Authentication successful
+2026-01-08 19:50:02 | INFO     | src.utils.verbose_output:log_stage_emoji:88 - 📋 Validating input directories...
+2026-01-08 19:50:02 | INFO     | src.validation.environment:validate_input_directories:62 - Input directory and profiles validated successfully
+2026-01-08 19:50:02 | SUCCESS  | __main__:main:34 - Input directory and profiles validated
+2026-01-08 19:50:02 | INFO     | src.utils.verbose_output:log_stage_emoji:88 - ⚙️ Starting video generation matrix...

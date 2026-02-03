@@ -1,0 +1,13 @@
+2025-12-20 16:58:26 | INFO     | src.utils.enhanced_logging:setup_dual_logging:50 - Logging configured (verbose=True, file=always)
+2025-12-20 16:58:26 | INFO     | src.utils.verbose_output:log_stage_emoji:86 - 🚀 Validating environment and authentication...
+2025-12-20 16:58:26 | INFO     | src.validation.environment:validate_environment:19 - Starting image-to-video generation
+2025-12-20 16:58:26 | DEBUG    | src.auth.op_auth:load_auth_config_from_path:125 - Loaded auth config from /Users/ruben/Nextcloud/08_-_DEVELOPMENT/GENAI_VIDEO_TOOLS/img-to-vid_tool/USER-FILES/01.CONFIG/auth_bites.yaml
+2025-12-20 16:58:26 | INFO     | src.auth.op_auth:get_replicate_api_token_from_op:179 - Retrieving Replicate API token from 1Password (config: auth_bites.yaml)
+2025-12-20 16:58:30 | DEBUG    | src.auth.op_auth:ensure_op_auth:37 - 1Password session is active.
+2025-12-20 16:58:31 | DEBUG    | src.auth.op_auth:get_secret:99 - Successfully retrieved secret from 1Password item 'API Replicate Bites'
+2025-12-20 16:58:31 | INFO     | src.auth.op_auth:get_replicate_api_token_from_op:187 - ✅ Successfully retrieved Replicate API token from 1Password
+2025-12-20 16:58:31 | SUCCESS  | __main__:main:32 - Authentication successful
+2025-12-20 16:58:31 | INFO     | src.utils.verbose_output:log_stage_emoji:86 - 📋 Validating input directories...
+2025-12-20 16:58:31 | INFO     | src.validation.environment:validate_input_directories:70 - All input directories validated successfully
+2025-12-20 16:58:31 | SUCCESS  | __main__:main:39 - All input directories validated
+2025-12-20 16:58:31 | INFO     | src.utils.verbose_output:log_stage_emoji:86 - ⚙️ Starting video generation matrix...

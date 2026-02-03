@@ -1,0 +1,40 @@
+2026-01-18 18:51:32 | INFO     | src.utils.enhanced_logging:setup_dual_logging:55 - Logging configured (verbose=True, file=always)
+2026-01-18 18:51:32 | INFO     | src.utils.verbose_output:log_stage_emoji:120 - 🚀 Validating environment and authentication...
+2026-01-18 18:51:32 | INFO     | src.validation.environment:validate_environment:20 - Starting image-to-video generation
+2026-01-18 18:51:32 | DEBUG    | src.auth.op_auth:load_auth_config_from_path:125 - Loaded auth config from /Users/ruben/Nextcloud/08-DEV/GENAI_VID/vid-to-vid/USER-FILES/01.CONFIG/auth_ruben.yaml
+2026-01-18 18:51:32 | INFO     | src.auth.op_auth:get_replicate_api_token_from_op:179 - Retrieving Replicate API token from 1Password (config: auth_ruben.yaml)
+2026-01-18 18:51:37 | DEBUG    | src.auth.op_auth:ensure_op_auth:37 - 1Password session is active.
+2026-01-18 18:51:38 | DEBUG    | src.auth.op_auth:get_secret:99 - Successfully retrieved secret from 1Password item 'API Replicate Ruben'
+2026-01-18 18:51:38 | INFO     | src.auth.op_auth:get_replicate_api_token_from_op:187 - ✅ Successfully retrieved Replicate API token from 1Password
+2026-01-18 18:51:38 | SUCCESS  | __main__:main:31 - Authentication successful
+2026-01-18 18:51:38 | INFO     | src.utils.verbose_output:log_stage_emoji:120 - 📋 Validating input directories...
+2026-01-18 18:51:38 | INFO     | src.validation.environment:validate_input_directories:58 - Profiles directory validated successfully
+2026-01-18 18:51:38 | SUCCESS  | __main__:main:36 - Input directory and profiles validated
+2026-01-18 18:51:38 | INFO     | src.utils.verbose_output:log_stage_emoji:120 - ⚙️ Starting video generation matrix...
+2026-01-18 18:51:38 | INFO     | src.utils.verbose_output:log_stage_emoji:120 - 📋 Loading video profiles...
+2026-01-18 18:51:38 | INFO     | src.utils.verbose_output:log_stage_emoji:120 - ❌ Fatal error: 'ProfileValidator' object has no attribute 'validate_duration_section'
+2026-01-18 18:51:38 | ERROR    | __main__:main:104 - Full traceback:
+Traceback (most recent call last):
+
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+
+  File "/Users/ruben/Nextcloud/08-DEV/GENAI_VID/vid-to-vid/src/main_verbose.py", line 109, in <module>
+    sys.exit(main())
+
+> File "/Users/ruben/Nextcloud/08-DEV/GENAI_VID/vid-to-vid/src/main_verbose.py", line 53, in main
+    results = process_matrix_verbose(context)
+
+  File "/Users/ruben/Nextcloud/08-DEV/GENAI_VID/vid-to-vid/src/processing/verbose_processor.py", line 46, in process_matrix_verbose
+    async_client, jobs, active_profiles, run_dir = _setup_processing(context)
+
+  File "/Users/ruben/Nextcloud/08-DEV/GENAI_VID/vid-to-vid/src/processing/verbose_processor.py", line 65, in _setup_processing
+    active_profiles = load_active_profiles(context.profiles_dir)
+
+  File "/Users/ruben/Nextcloud/08-DEV/GENAI_VID/vid-to-vid/src/processing/profile_loader.py", line 134, in load_active_profiles
+    profile = load_single_profile(yaml_file)
+
+  File "/Users/ruben/Nextcloud/08-DEV/GENAI_VID/vid-to-vid/src/processing/profile_loader.py", line 31, in load_single_profile
+    duration_config = validator.validate_duration_section(profile_data, yaml_file)
+
+AttributeError: 'ProfileValidator' object has no attribute 'validate_duration_section'. Did you mean: 'validate_params_section'?
