@@ -92,31 +92,16 @@ def create_progress_display() -> VerboseProgress:
     """Create enhanced progress bar."""
     return VerboseProgress(
         title="Progress",
-        bar="smooth",
-        spinner="dots_waves",
-        dual_line=True,
-        stats=True,
-        monitor=True,
-        elapsed=True,
+        **ALIVE_PROGRESS_OPTIONS,
     )
+
+
+from ..config.constants import STATUS_EMOJIS, ALIVE_PROGRESS_OPTIONS
 
 
 def log_stage_emoji(stage: str, message: str) -> None:
     """Log with emoji stage indicators."""
-    emojis = {
-        "starting": "🚀",
-        "preparing": "📋",
-        "api_call": "📡",
-        "queued": "⏳",
-        "processing": "⚙️",
-        "downloading": "📥",
-        "saving": "💾",
-        "complete": "✅",
-        "failed": "❌",
-        "retry": "🔄",
-    }
-
-    emoji = emojis.get(stage.lower(), "▶️")
+    emoji = STATUS_EMOJIS.get(stage.lower(), "▶️")
     logger.info(f"{emoji} {message}")
 
 

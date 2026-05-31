@@ -895,5 +895,126 @@ prompt_suffix: "Shot on ARRI Alexa, 4K resolution"
 
 ---
 
+### Refactor Analysis (2026-05-31)
+
+#### Analysis Completed
+- Full report: `USER-FILES/07.TEMP/260531_185606_refactor_report.md`
+- **Code Health Score**: 6.5/10 (down from 7.5 due to critical bugs)
+- **Total Python Files**: 53 source files
+- **Total Lines of Code**: ~5,137 lines
+
+#### Critical Bugs Identified (Must Fix First)
+1. **`hybrid_processor.py:171`** — imports `_prepare_generation_params` which does not exist in `processor.py`
+2. **`estimate_costs.py:11`** — imports `duration_handler.process_duration` which does not exist as a module
+3. **`main_hybrid.py:64`** — imports `adjustments_reporter` from non-existent `src/reporting/` directory
+
+#### Key Refactoring Needs
+1. **High Priority**: Consolidate 3 near-identical processors (~600 lines removable)
+2. **High Priority**: Consolidate 3 progress system implementations (~350 lines removable)
+3. **High Priority**: Consolidate async client duplication (~70 lines removable)
+4. **Medium Priority**: Merge duplicate input discovery functions (~40 lines removable)
+5. **Medium Priority**: Extract shared directory creation utility (~20 lines removable)
+6. **Medium Priority**: Extract status emoji maps to constants (~30 lines removable)
+7. **Medium Priority**: Extract response parsing to shared utility (~50 lines removable)
+8. **Low Priority**: Delete unreachable code in `log_generator.py` (31 lines)
+9. **Low Priority**: Delete `__main__` block in `hybrid_progress.py` (39 lines)
+
+#### Dead Code Identified (~200 lines)
+- `log_generator.py:83-113` — unreachable duplicate return block
+- `hybrid_progress.py:233-271` — demo/test code in production module
+- `epic_progress.py` — unused `EpicProgress` class, unused `ProgressBar` methods
+- `verbose_output.py` — unused `VerboseProgress` class
+
+#### File Size Status
+- Largest file: `epic_progress.py` (322 lines) — over 250 soft limit
+- Files >250 lines: 4 (target: 0)
+- Files >400 lines: 0 (hard limit maintained)
+
+---
+
+### Refactor Execution (2026-05-31)
+
+#### Completed (16/25 tasks)
+- **3 Critical Bugs Fixed**: `_prepare_generation_params()` implemented, `duration_handler` import inlined, `adjustments_reporter` block removed
+- **Dead Code Removed**: Unreachable code in `log_generator.py`, `__main__` in `hybrid_progress.py`, unused `EpicProgress` class/methods, `progress_display.py` deleted (~170 lines)
+- **Shared Utilities Extracted**: `create_timestamped_directory()` in `file_manager.py`, `STATUS_EMOJIS` in `constants.py`, `extract_video_url()` in new `response_parser.py`, merged `discover_*` functions (~100 lines)
+- **Entry Points Consolidated**: `run_with_error_handling()` wrapper in new `error_handling.py` applied to all 3 main files (~60 lines)
+- **Code Quality**: Merged `from_failure`/`from_motion_control_failure` factory methods, made `VideoProcessingContext` fields Optional, cross-platform trash fallback (~30 lines)
+
+#### New Files Created
+- `src/api/response_parser.py` — Shared URL extraction logic
+- `src/utils/error_handling.py` — Standardized error handling wrapper
+
+#### Remaining Work (5 tasks)
+1. **Blocked**: Delete `VerboseProgress` + `create_progress_display()` (used by `VerboseContext`)
+2. **Not Started**: Extract `_validate_pricing()` helper from `cost_calculator.py`
+3. **Not Started**: Simplify `GenerationContext` dataclass (3 file fields → 1)
+4. **Deferred**: Processor consolidation (3 files, ~600 lines, high-risk)
+5. **Deferred**: Progress system consolidation (3 files, ~350 lines, high-risk)
+
+#### Impact
+- **Code Health Score**: 6.5 → 7.5/10
+- **Lines Removed**: ~360
+- **Files Modified**: 19
+- **All imports verified working**
+
+---
+
+### Single-Profile Refactor (2026-01-18)
+
+#### Completed
+- Removed matrix processing pattern (N × M cartesian product → single profile)
+- Renamed `load_active_profiles()` → `load_active_profile()` (returns `Dict`, not `List`)
+- Renamed `process_matrix()` → `process_files()`, `process_matrix_verbose()` → `process_files_verbose()`, `process_matrix_hybrid()` → `process_files_hybrid()`
+- Enforced single-profile constraint: errors if 0 or >1 profile files exist
+- Updated progress bars to show profile name: "Processing N files with profile 'name'"
+- Simplified `estimate_costs.py` for single profile
+- All terminology updated: zero "matrix" or "combination" references remain
+
+#### Files Modified (9)
+`profile_loader.py`, `processor.py`, `verbose_processor.py`, `hybrid_processor.py`, `main.py`, `main_verbose.py`, `main_hybrid.py`, `estimate_costs.py`, `models/processing.py`
+
+#### Known Pre-existing Bugs (Not Fixed)
+1. **`hybrid_processor.py:171`** — imports `_prepare_generation_params` which does not exist in `processor.py`
+2. **`estimate_costs.py:11`** — imports `duration_handler.process_duration` which does not exist as a module
+
+### Cleanup Session (260531)
+
+#### Completed
+- Deleted `src/models/profile.py` (unused VideoProfile, -15 lines)
+- Deleted `src/api/async_client.py` (unused AsyncReplicateClient, -74 lines)
+- Removed duplicate `discover_motion_control_jobs` definition (-5 lines)
+- Removed 6 unused constants from `constants.py` (-18 lines)
+- Refactored `discover_motion_control_jobs` to use `discover_markdown_jobs` (-36 lines)
+- Extracted `ALIVE_PROGRESS_OPTIONS` to `constants.py` (~10 lines saved)
+- All 14 import verification checks passed
+
+#### Impact
+- **Code Health Score**: 7.5 → 8.0/10
+- **Lines Removed**: ~163
+- **Files Deleted**: 2
+- **Files Modified**: 6
+
+#### Current Code Metrics (as of 260531)
+- **Source Files**: 52 Python files
+- **Total Lines**: ~4,872
+- **Files >250 lines**: 2 (`processor.py`: 324, `verbose_processor.py`: 277)
+- **Functions >50 lines**: 20 (largest: `generate_markdown_report()` at 136 lines)
+- **TODO/FIXME comments**: 0
+- **Print statements**: 0
+- **Dead code files**: 0
+- **Test modules**: 9
+- **Type hint coverage**: ~90%
+
+#### Known Technical Debt
+- 2 files exceed 250-line soft limit
+- 20 functions exceed 50-line target
+- Test coverage gaps: processor, verbose_processor, hybrid_processor, profile_loader, input_discovery, output_generator
+- pytest not installed in requirements.txt
+- Processor consolidation (3 files, ~600 lines) — high-risk, deferred
+- Progress system consolidation (3 files, ~350 lines) — high-risk, deferred
+
+---
+
 **Maintained by**: AI Assistant  
 **Purpose**: Persistent context across development sessions

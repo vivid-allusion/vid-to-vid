@@ -71,27 +71,43 @@ def archive_and_cleanup_logs(output_dir: Path) -> None:
 
 def _trash_files(files: List[Path]) -> None:
     """
-    Move files to trash using the 'trash' command.
+    Move files to trash using cross-platform approach.
+
+    Tries: 1) 'trash' command (macOS/Linux), 2) 'gio trash' (Linux GNOME),
+    3) fallback to .trash/ directory.
 
     Args:
         files: List of file paths to move to trash
-
-    Raises:
-        FileNotFoundError: If trash command is not available
-        subprocess.CalledProcessError: If trash command fails
     """
     if not files:
         return
 
-    # Check if trash command is available
+    # Try 'trash' command first (macOS via brew, or trash-cli on Linux)
     try:
         subprocess.run(["which", "trash"], check=True, capture_output=True)
+        _trash_with_command(files, "trash")
+        return
     except subprocess.CalledProcessError:
-        raise FileNotFoundError(
-            "trash command not found. Install it with: brew install trash"
-        )
+        pass
 
-    # Move files to trash in batches to avoid command line length limits
+    # Try 'gio trash' (GNOME desktop on Linux)
+    try:
+        subprocess.run(["which", "gio"], check=True, capture_output=True)
+        _trash_with_command(files, "gio", args=["trash"])
+        return
+    except subprocess.CalledProcessError:
+        pass
+
+    # Fallback: move to .trash/ directory
+    _trash_to_directory(files)
+
+
+def _trash_with_command(files: List[Path], command: str, args: Optional[List[str]] = None) -> None:
+    """Move files to trash using a system command."""
+    cmd_args = [command]
+    if args:
+        cmd_args.extend(args)
+
     batch_size = 50
     for i in range(0, len(files), batch_size):
         batch = files[i:i + batch_size]
@@ -99,7 +115,7 @@ def _trash_files(files: List[Path]) -> None:
 
         try:
             subprocess.run(
-                ["trash"] + file_paths,
+                cmd_args + file_paths,
                 check=True,
                 capture_output=True,
                 text=True
@@ -107,3 +123,22 @@ def _trash_files(files: List[Path]) -> None:
         except subprocess.CalledProcessError as e:
             logger.error(f"Failed to trash files: {e.stderr}")
             raise
+
+
+def _trash_to_directory(files: List[Path]) -> None:
+    """Move files to .trash/ directory as fallback."""
+    if not files:
+        return
+
+    # Use the parent of the first file as the base for .trash/
+    base_dir = files[0].parent
+    trash_dir = base_dir / ".trash"
+    trash_dir.mkdir(exist_ok=True)
+
+    for file_path in files:
+        try:
+            dest = trash_dir / file_path.name
+            file_path.rename(dest)
+            logger.debug(f"Moved to trash: {dest}")
+        except Exception as e:
+            logger.warning(f"Failed to trash {file_path}: {e}")

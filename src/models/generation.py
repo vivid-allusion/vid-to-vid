@@ -74,17 +74,19 @@ class GenerationContext:
         prompt: str,
         params: Dict[str, Any],
         error_message: str,
+        num_frames: int = 0,
     ) -> "GenerationContext":
         """
         Factory method to create context for a failed generation.
 
         Args:
-            job: MarkdownJob with parsed data
+            job: MarkdownJob or MotionControlJob with parsed data
             video_dir: Output directory
             profile: Profile configuration
             prompt: The prompt used
             params: Profile parameters
             error_message: Error message describing the failure
+            num_frames: Frame count (0 for motion control, job.num_frames for markdown)
 
         Returns:
             GenerationContext marked as failed
@@ -96,7 +98,7 @@ class GenerationContext:
             output_dir=video_dir,
             prompt=prompt,
             image_url=job.image_url,
-            num_frames=job.num_frames,
+            num_frames=num_frames,
             profile=profile,
             params=params,
             video_url="",
@@ -118,35 +120,13 @@ class GenerationContext:
         params: Dict[str, Any],
         error_message: str,
     ) -> "GenerationContext":
-        """
-        Factory method to create context for a failed motion control generation.
-
-        Args:
-            job: MotionControlJob with parsed data
-            video_dir: Output directory
-            profile: Profile configuration
-            prompt: The prompt used
-            params: Profile parameters
-            error_message: Error message describing the failure
-
-        Returns:
-            GenerationContext marked as failed
-        """
-        return cls(
-            prompt_file=job.markdown_file,
-            image_url_file=job.markdown_file,
-            num_frames_file=job.markdown_file,
-            output_dir=video_dir,
-            prompt=prompt,
-            image_url=job.image_url,
-            num_frames=0,
+        """Factory method for failed motion control generation (uses num_frames=0)."""
+        return cls.from_failure(
+            job=job,
+            video_dir=video_dir,
             profile=profile,
+            prompt=prompt,
             params=params,
-            video_url="",
-            video_path=video_dir
-            / f"{job.markdown_file.stem}_X_{profile['name']}_FAILED.mp4",
-            cost=0.0,
-            adjustment_info=None,
-            failed=True,
             error_message=error_message,
+            num_frames=0,
         )

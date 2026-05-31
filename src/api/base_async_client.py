@@ -12,6 +12,7 @@ from replicate.client import Client
 from ..models.video_processing import VideoRequest, APIClientConfig
 from ..utils.verbose_output import log_stage_emoji, show_error_with_retry
 from ..utils.timeouts import create_video_timeout
+from .response_parser import extract_video_url
 
 
 class BaseAsyncReplicateClient(ABC):
@@ -145,33 +146,7 @@ class BaseAsyncReplicateClient(ABC):
 
     def _extract_output_url(self, prediction: Prediction) -> Optional[str]:
         """Extract video URL from prediction output."""
-        output = prediction.output
-
-        if not output:
-            logger.error("No output from prediction")
-            return None
-
-        logger.debug(f"Output type: {type(output)}, value: {output}")
-
-        # Handle different output formats
-        if isinstance(output, str):
-            return output
-        elif hasattr(output, "url"):
-            return output.url
-        elif isinstance(output, list) and len(output) > 0:
-            first_item = output[0]
-            if hasattr(first_item, "url"):
-                return first_item.url
-            elif isinstance(first_item, str):
-                return first_item
-        else:
-            # Try converting to string
-            result_str = str(output)
-            if result_str.startswith("http"):
-                return result_str
-
-        logger.error(f"Could not extract URL from output: {output}")
-        return None
+        return extract_video_url(prediction.output)
 
     @abstractmethod
     def _poll_prediction(

@@ -4,6 +4,8 @@ from typing import TYPE_CHECKING, Optional, Any, Callable, Union
 from contextlib import contextmanager
 from loguru import logger
 
+from ..config.constants import ALIVE_PROGRESS_OPTIONS
+
 if TYPE_CHECKING:
     from alive_progress import alive_bar
 
@@ -97,39 +99,6 @@ class ProgressBar:
         if status and hasattr(bar, "text"):
             bar.text = str(status)
 
-    def reset(
-        self,
-        task_id: str,
-        total: Optional[float] = None,
-        description: Optional[str] = None,
-    ) -> None:
-        """Reset a task."""
-        bar = self._bars.get(task_id)
-        if bar is not None:
-            try:
-                bar.stop()
-            except Exception:
-                pass
-
-        if total is not None or description is not None:
-            self._bars[task_id] = alive_bar(
-                total=total, title=description or "", **self._kwargs
-            )
-
-    def remove_task(self, task_id: str) -> None:
-        """Remove a task."""
-        bar = self._bars.pop(task_id, None)
-        if bar is not None:
-            try:
-                bar.stop()
-            except Exception:
-                pass
-
-    def start_task(self, task_id: str) -> None:
-        """Start a task."""
-        if task_id in self._bars and self._bars[task_id] is None:
-            self._bars[task_id] = alive_bar(**self._kwargs)
-
     def stop(self) -> None:
         """Stop all bars."""
         for bar in self._bars.values():
@@ -150,49 +119,6 @@ class ProgressBar:
                 pass
 
 
-class EpicProgress:
-    """Epic progress bar with alive-progress."""
-
-    def __init__(self, transient: bool = False) -> None:
-        self.transient = transient
-        self.progress: Optional[ProgressBar] = None
-
-    def create_progress(self) -> ProgressBar:
-        """Create progress bar."""
-        return ProgressBar(
-            bar="smooth",
-            spinner="dots_waves",
-            dual_line=True,
-            stats=True,
-            monitor=True,
-            elapsed=True,
-        )
-
-    @contextmanager
-    def create_with_panel(self, title: str = "Video Generation Progress"):
-        """Create progress with panel wrapper."""
-        self.progress = self.create_progress()
-
-        try:
-            self.progress.__enter__()
-            yield self.progress
-        finally:
-            self.progress.__exit__(None, None, None)
-            self.progress = None
-
-    @contextmanager
-    def create_simple(self):
-        """Create simple progress."""
-        self.progress = self.create_progress()
-
-        try:
-            self.progress.__enter__()
-            yield self.progress
-        finally:
-            self.progress.__exit__(None, None, None)
-            self.progress = None
-
-
 class VideoGenerationProgress:
     """Video generation progress with alive-progress."""
 
@@ -205,12 +131,7 @@ class VideoGenerationProgress:
         """Track video generation progress."""
         self.progress = ProgressBar(
             title=f"🎬 {title}",
-            bar="smooth",
-            spinner="dots_waves",
-            dual_line=True,
-            stats=True,
-            monitor=True,
-            elapsed=True,
+            **ALIVE_PROGRESS_OPTIONS,
         )
 
         self.progress.__enter__()
@@ -289,21 +210,16 @@ class VideoGenerationProgress:
         logger.success(f"✓ {video_name} - ${cost:.2f}")
 
 
+from ..config.constants import STATUS_EMOJIS
+
+
 def create_api_callback(
     progress: ProgressBar, task_id: str, **kwargs: Any
 ) -> Callable[[str, Optional[float]], None]:
     """Create callback for API polling progress."""
 
     def callback(status: str, percentage: Optional[float]) -> None:
-        status_emoji = {
-            "starting": "🚀",
-            "processing": "⚙️",
-            "succeeded": "✅",
-            "failed": "❌",
-            "queued": "⏳",
-        }
-
-        emoji = status_emoji.get(status.lower(), "▶️")
+        emoji = STATUS_EMOJIS.get(status.lower(), "▶️")
 
         if percentage is not None:
             status_text = f"{emoji} {status.title()} ({percentage:.0f}%)"
@@ -313,10 +229,3 @@ def create_api_callback(
         progress.update(task_id, status=status_text)
 
     return callback
-
-
-def create_epic_progress(
-    title: str = "Processing", transient: bool = False, **kwargs: Any
-) -> EpicProgress:
-    """Create an epic progress bar."""
-    return EpicProgress(transient=transient)

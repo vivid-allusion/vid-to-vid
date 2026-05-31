@@ -6,51 +6,47 @@ from datetime import datetime
 from typing import Dict, List, Any, Tuple
 
 from src.processing.input_discovery import discover_markdown_jobs, parse_markdown_job
-from src.processing.profile_loader import load_active_profiles
+from src.processing.profile_loader import load_active_profile
 from src.processing.cost_calculator import calculate_video_cost
-from src.processing.duration_handler import process_duration
+from src.output.file_manager import create_timestamped_directory
 from src.config.settings import INPUT_DIR, PROFILES_DIR, OUTPUT_DIR
 from src.models.triplet import MarkdownJob
 from loguru import logger
 
 
-def load_estimation_data() -> Tuple[List[Any], List[MarkdownJob]]:
+def load_estimation_data() -> Tuple[Dict[str, Any], List[MarkdownJob]]:
     """
-    Load profiles and discover markdown jobs.
+    Load single profile and discover markdown jobs.
 
     Returns:
-        Tuple of (profiles, jobs)
+        Tuple of (profile, jobs)
 
     Raises:
         Exception: If loading fails
     """
-    # Load profiles
-    profiles = load_active_profiles(PROFILES_DIR)
-    logger.info(f"Loaded {len(profiles)} profiles")
+    profile = load_active_profile(PROFILES_DIR)
+    logger.info(f"Loaded profile: {profile['name']}")
 
-    # Discover markdown jobs
     markdown_files = discover_markdown_jobs(INPUT_DIR)
     jobs = [parse_markdown_job(md_file) for md_file in markdown_files]
     logger.info(f"Found {len(jobs)} markdown job files")
 
-    return profiles, jobs
+    return profile, jobs
 
 
-def calculate_all_costs(
-    profiles: List[Dict[str, Any]], jobs: List[MarkdownJob]
-) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], Dict[str, int]]:
+def calculate_cost(
+    profile: Dict[str, Any], jobs: List[MarkdownJob]
+) -> Tuple[Dict[str, Any], List[Dict[str, Any]]]:
     """
-    Calculate costs for all profiles and video durations.
+    Calculate costs for the single profile and video durations.
 
     Args:
-        profiles: List of profile dictionaries
+        profile: Single profile dictionary
         jobs: List of MarkdownJob objects
 
     Returns:
-        Tuple of (cost_data, duration_list, profile_totals)
-        profile_totals is a dict of {profile_name: total_seconds}
+        Tuple of (cost_data, duration_list)
     """
-    # Extract frame counts from markdown jobs
     frame_data = []
 
     for job in jobs:
@@ -63,139 +59,109 @@ def calculate_all_costs(
             logger.error(f"Failed to read frames from {job.markdown_file}: {e}")
             continue
 
-    # Calculate costs for each profile
-    cost_data = []
-    profile_totals = {}  # Track total seconds per profile
+    profile_total_seconds = 0
+    duration_list = []
 
-    for profile in profiles:
-        try:
-            # Process each video's duration using profile's rules
-            profile_total_seconds = 0
-            duration_list = []
+    for item in frame_data:
+        frames = item["frames"]
+        was_adjusted = False
+        adjustment_info = None
 
-            for item in frame_data:
-                # Convert frames to seconds and apply min/max limits
-                adjusted_duration, was_adjusted, adjustment_info = process_duration(
-                    item["frames"], profile
-                )
+        if "duration_config" in profile:
+            dur_config = profile["duration_config"]
+            duration_type = dur_config.get("duration_type", "frames")
+            min_dur = dur_config.get("min_duration", 0)
+            max_dur = dur_config.get("max_duration", float("inf"))
 
-                # Get the actual duration in seconds
-                if profile["duration_config"]["duration_type"] == "frames":
-                    # Convert frames to seconds
-                    fps = profile["duration_config"]["fps"]
-                    duration_seconds = int(adjusted_duration / fps)
-                else:  # already in seconds
-                    duration_seconds = adjusted_duration
+            if duration_type == "frames":
+                adjusted_duration = frames
+                if adjusted_duration < min_dur:
+                    adjusted_duration = min_dur
+                    was_adjusted = True
+                elif adjusted_duration > max_dur:
+                    adjusted_duration = max_dur
+                    was_adjusted = True
+                fps = dur_config.get("fps", 24)
+                duration_seconds = int(adjusted_duration / fps)
+            else:
+                adjusted_duration = frames
+                if adjusted_duration < min_dur:
+                    adjusted_duration = int(min_dur)
+                    was_adjusted = True
+                elif adjusted_duration > max_dur:
+                    adjusted_duration = int(max_dur)
+                    was_adjusted = True
+                duration_seconds = adjusted_duration
+        else:
+            fps = 24
+            duration_seconds = int(frames / fps)
 
-                profile_total_seconds += duration_seconds
-                duration_list.append(
-                    {
-                        "prompt": item["prompt"],
-                        "frames": item["frames"],
-                        "duration": duration_seconds,
-                        "adjusted": was_adjusted,
-                    }
-                )
+        profile_total_seconds += duration_seconds
+        duration_list.append(
+            {
+                "prompt": item["prompt"],
+                "frames": item["frames"],
+                "duration": duration_seconds,
+                "adjusted": was_adjusted,
+            }
+        )
 
-            # Calculate total cost for this profile
-            total_cost = calculate_video_cost(profile, profile_total_seconds)
-            cost_per_video = total_cost / len(jobs) if jobs else 0
+    total_cost = calculate_video_cost(profile, profile_total_seconds)
+    cost_per_video = total_cost / len(jobs) if jobs else 0
 
-            # Get pricing info
-            pricing = profile.get("pricing", {})
-            cost_per_second = pricing.get("cost_per_second", 0)
+    pricing = profile.get("pricing", {})
+    cost_per_second = pricing.get("cost_per_second", 0)
 
-            cost_data.append(
-                {
-                    "profile": profile["name"],
-                    "model": profile["model_id"],
-                    "cost_per_second": cost_per_second,
-                    "total_seconds": profile_total_seconds,
-                    "total_cost": total_cost,
-                    "cost_per_video": cost_per_video,
-                    "num_videos": len(jobs),
-                    "duration_list": duration_list,
-                }
-            )
+    cost_data = {
+        "profile": profile["name"],
+        "model": profile["model_id"],
+        "cost_per_second": cost_per_second,
+        "total_seconds": profile_total_seconds,
+        "total_cost": total_cost,
+        "cost_per_video": cost_per_video,
+        "num_videos": len(jobs),
+    }
 
-            profile_totals[profile["name"]] = profile_total_seconds
+    logger.info(
+        f"Profile '{profile['name']}': ${total_cost:.4f} for {profile_total_seconds}s total video"
+    )
 
-            logger.info(
-                f"Profile '{profile['name']}': ${total_cost:.4f} for {profile_total_seconds}s total video"
-            )
-        except Exception as e:
-            logger.error(f"Failed to calculate cost for profile {profile['name']}: {e}")
-
-    # Use the first profile's duration list for the report (they should be similar)
-    display_duration_list = cost_data[0]["duration_list"] if cost_data else []
-
-    return cost_data, display_duration_list, profile_totals
+    return cost_data, duration_list
 
 
 def generate_cost_report(
-    cost_data: List[Dict[str, Any]],
+    cost_data: Dict[str, Any],
     duration_list: List[Dict[str, Any]],
-    profile_totals: Dict[str, int],
     num_jobs: int,
 ) -> Path:
     """
     Generate markdown cost estimation report.
 
     Args:
-        cost_data: List of cost calculations per profile
-        duration_list: List of video durations (from first profile)
-        profile_totals: Dict of total seconds per profile
+        cost_data: Cost calculation for the profile
+        duration_list: List of video durations
         num_jobs: Number of markdown job files
 
     Returns:
         Path to generated report
     """
-    # Create output directory with timestamp
-    timestamp = datetime.now().strftime("%y%m%d_%H%M%S")
-    dir_name = f"{timestamp}_IMG-TO-VID"
-    output_dir = OUTPUT_DIR / dir_name
-    output_dir.mkdir(parents=True, exist_ok=True)
+    output_dir = create_timestamped_directory(OUTPUT_DIR, "IMG-TO-VID")
     report_path = output_dir / "cost_estimate.md"
 
-    # Pre-compute summary stats
-    min_cost_per_video = min((c["cost_per_video"] for c in cost_data), default=0)
-    max_cost_per_video = max((c["cost_per_video"] for c in cost_data), default=0)
-    avg_cost_per_video = (
-        sum(c["cost_per_video"] for c in cost_data) / len(cost_data) if cost_data else 0
-    )
-    total_profiles = len(cost_data)
-
     with open(report_path, "w") as f:
-        # Title
         f.write("# Cost Estimation Report\n\n")
         f.write(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
 
-        # Put all summary information at the top
         f.write("## Summary\n\n")
         f.write(f"- **Total Videos:** {num_jobs}\n")
-        f.write(f"- **Profiles Evaluated:** {total_profiles}\n")
-        f.write(f"- **Avg Cost/Video (across profiles):** ${avg_cost_per_video:.4f}\n")
-        f.write(
-            f"- **Cost/Video Range:** ${min_cost_per_video:.4f} – ${max_cost_per_video:.4f}\n\n"
-        )
+        f.write(f"- **Profile:** {cost_data['profile']}\n")
+        f.write(f"- **Model:** {cost_data['model']}\n")
+        f.write(f"- **Cost/Second:** ${cost_data['cost_per_second']:.4f}\n")
+        f.write(f"- **Total Duration:** {cost_data['total_seconds']}s\n")
+        f.write(f"- **Total Cost:** **${cost_data['total_cost']:.4f}**\n")
+        f.write(f"- **Avg Cost/Video:** ${cost_data['cost_per_video']:.4f}\n\n")
 
-        # Cost table near top as part of summary
-        f.write("## Cost by Profile\n\n")
-        f.write(
-            "| Profile | Model | Cost/Second | Total Duration | Total Cost | Avg Cost/Video |\n"
-        )
-        f.write(
-            "|---------|-------|-------------|----------------|------------|----------------|\n"
-        )
-        for cost in cost_data:
-            f.write(
-                f"| {cost['profile']} | {cost['model']} | ${cost['cost_per_second']:.4f} | "
-            )
-            f.write(f"{cost['total_seconds']}s | **${cost['total_cost']:.4f}** | ")
-            f.write(f"${cost['cost_per_video']:.4f} |\n")
-
-        # Detailed section follows after the summaries
-        f.write("\n## Video Duration Distribution (First Profile)\n\n")
+        f.write("## Video Duration Distribution\n\n")
         f.write("| Video | Input Frames | Video Duration |\n")
         f.write("|-------|--------------|----------------|\n")
         for item in duration_list:
@@ -204,14 +170,13 @@ def generate_cost_report(
                 f"| {item['prompt']} | {item['frames']} | {item['duration']}s{adjusted_marker} |\n"
             )
 
-        # Calculate total for first profile
         total_first = sum(item["duration"] for item in duration_list)
         f.write(f"| **TOTAL** | - | **{total_first}s** |\n\n")
         f.write("*⚠️ = Duration adjusted to meet model min/max constraints*\n\n")
 
         f.write("## Notes\n\n")
         f.write("- All pricing is time-based (cost per second of video output)\n")
-        f.write("- This is an estimate based on configured profiles\n")
+        f.write("- This is an estimate based on the active profile\n")
         f.write("- Actual costs may vary if generation fails or retries are needed\n")
 
     return report_path
@@ -222,16 +187,11 @@ def estimate_costs() -> None:
     logger.info("Starting cost estimation...")
 
     try:
-        # Load data
-        profiles, jobs = load_estimation_data()
+        profile, jobs = load_estimation_data()
 
-        # Calculate costs
-        cost_data, duration_list, profile_totals = calculate_all_costs(profiles, jobs)
+        cost_data, duration_list = calculate_cost(profile, jobs)
 
-        # Generate report
-        report_path = generate_cost_report(
-            cost_data, duration_list, profile_totals, len(jobs)
-        )
+        report_path = generate_cost_report(cost_data, duration_list, len(jobs))
 
         logger.info(f"Cost estimation report saved to: {report_path}")
         logger.success(f"✅ Cost estimation complete! Report saved to: {report_path}")

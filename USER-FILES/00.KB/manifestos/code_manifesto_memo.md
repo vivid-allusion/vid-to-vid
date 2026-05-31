@@ -48,13 +48,7 @@ Since I'm the only user, I can be opinionated, direct, and unapologetic about de
 - Active profiles = active behavior
 - No hardcoded magic values
 
-### 7. Matrix Processing Pattern
-- All inputs × All profiles = Total operations
-- Process systematically and predictably
-- Track success/failure comprehensively
-- Generate reports automatically
-
-### 8. Error Handling Hierarchy
+### 7. Error Handling Hierarchy
 ```python
 # Good
 if not api_key:
@@ -66,7 +60,7 @@ if not api_key:
     api_key = "default_key"  # NO! Never assume
 ```
 
-### 9. Directory Structure Discipline
+### 8. Directory Structure Discipline
 ```
 PROJECT/
 ├── src/           # Core logic only
@@ -77,46 +71,61 @@ PROJECT/
 └── *.md           # Documentation (when requested)
 ```
 
-### 10. Git Discipline
-- Test before committing
-- Never commit without running lint/typecheck
+### 9. Git Discipline
+- Run the script before committing to verify it works
 - Commit messages describe WHY, not WHAT
 - No commits unless explicitly requested
 
-### 11. Dependencies and Imports
+### 10. Dependencies and Imports
 - Use pathlib.Path, never os.path
 - Type hints for all function signatures
 - Requirements.txt with exact versions
 - Virtual environments always
 
-### 12. Logging and Output
+### 11. Logging and Output
 - Use loguru for structured logging
 - Rich for progress displays
 - Clear, actionable error messages
 - Cost reporting for expensive operations
 
-### 13. The Anti-Patterns (Never Do These)
+### 12. The Anti-Patterns (Never Do These)
 - **Clever code** - Be obvious, not clever
 - **Premature optimization** - Make it work, then maybe make it fast
 - **Assumption-based defaults** - Fail if missing, don't guess
 - **Magic behavior** - Explicit > Implicit
 - **Feature creep** - Resist the urge to "improve"
 
-### 14. Documentation Philosophy
+### 13. Documentation Philosophy
 - Code should be self-documenting
 - Comments explain WHY, not WHAT
 - Create docs only when explicitly requested
 - No README files unless asked
 - No need for extensive docs - I know what my tools do
 
-### 15. Testing Reality
-- Test with real data in real scenarios
-- One test file/image to start
-- Expand testing only after basic success
-- Cost estimation before large batches
+### 14. Testing Philosophy
+- No automated test suites or test frameworks
+- Manual testing only - I test my own scripts
+- Build working scripts, then I verify them myself
+- Focus on making the script functional, not on writing tests
 
-### 16. Running
-- The script should run with the command `python3 -m src.main`
+### 15. Running
+- Main entry point: `python3 -m src.main`
+- Always provide `run.py` wrapper that handles complete environment setup:
+  - Creates virtual environment if it doesn't exist
+  - Activates the virtual environment
+  - Installs/updates dependencies from requirements.txt
+  - Runs the main entry point
+- The wrapper allows running with just `python3 run.py` - zero manual setup required
+
+### 16. TODO.md Format
+- Always include TODO.md in project root
+- The file must always end with this stop message:
+  ```
+  ### ⛔ STOP HERE ⛔
+
+  ### DO NOT IMPLEMENT ANYTHING BELOW THIS LINE WITHOUT EXPLICIT USER REQUEST
+  ```
+- This prevents agents from implementing unreviewed suggestions or features
 
 ## The Prime Directive
 
@@ -141,7 +150,7 @@ if not files:
 
 ### Process and Report Pattern
 ```python
-results = process_matrix(inputs, profiles)
+results = process_files(inputs, profile)
 create_success_report(results)
 create_cost_report(results)
 logger.success(f"Completed: {results['success']}/{results['total']}")

@@ -15,6 +15,7 @@ except ImportError:
 
 from .base_async_client import BaseAsyncReplicateClient
 from ..models.video_processing import APIClientConfig
+from ..config.constants import STATUS_EMOJIS
 
 
 class AsyncReplicateClientEnhanced(BaseAsyncReplicateClient):
@@ -181,15 +182,7 @@ class AsyncReplicateClientEnhanced(BaseAsyncReplicateClient):
 
     def _format_status_text(self, prediction: Prediction, elapsed: float) -> str:
         """Format dual-line status text for waves animation."""
-        status_emoji = {
-            "starting": "🚀",
-            "processing": "⚙️",
-            "succeeded": "✅",
-            "failed": "❌",
-            "queued": "⏳",
-        }
-
-        emoji = status_emoji.get(prediction.status, "▶️")
+        emoji = STATUS_EMOJIS.get(prediction.status, "▶️")
 
         # Line 1: Status and elapsed time
         elapsed_str = time.strftime("%M:%S", time.gmtime(elapsed))

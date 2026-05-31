@@ -1,7 +1,32 @@
 """File management utilities for output generation."""
 import shutil
+from datetime import datetime
 from pathlib import Path
+from typing import Optional
 from loguru import logger
+
+
+def create_timestamped_directory(
+    output_dir: Path, prefix: str, custom_output_path: Optional[str] = None
+) -> Path:
+    """
+    Create a timestamped output directory.
+
+    Args:
+        output_dir: Base output directory
+        prefix: Directory name prefix (e.g., 'MO-CONTROL', 'IMG-TO-VID')
+        custom_output_path: Optional custom output path override
+
+    Returns:
+        Path to the created directory
+    """
+    base_dir = Path(custom_output_path) if custom_output_path else output_dir
+    timestamp = datetime.now().strftime("%y%m%d_%H%M%S")
+    dir_name = f"{timestamp}_{prefix}"
+    run_dir = base_dir / dir_name
+    run_dir.mkdir(parents=True, exist_ok=True)
+    logger.info(f"Output directory: {run_dir}")
+    return run_dir
 
 
 class FileManager:

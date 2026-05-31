@@ -1,8 +1,7 @@
 """Enhanced processor with verbose terminal output."""
 
-from datetime import datetime
 from pathlib import Path
-from typing import Dict, Any, Optional, Tuple, List
+from typing import Dict, Any, Tuple, List
 
 from loguru import logger
 
@@ -10,6 +9,7 @@ from ..api.async_client_enhanced import AsyncReplicateClientEnhanced
 from ..utils.verbose_output import VerboseContext, log_stage_emoji
 from ..utils.epic_progress import VideoGenerationProgress, create_api_callback
 from ..utils.filename_utils import generate_video_filename
+from ..output.file_manager import create_timestamped_directory
 from ..models.generation import GenerationContext
 from ..models.processing import ProcessingContext
 from ..models.triplet import MotionControlJob
@@ -17,14 +17,14 @@ from ..models.video_processing import VideoProcessingContext, APIClientConfig
 from .cost_calculator import calculate_motion_control_cost
 from .input_discovery import discover_motion_control_jobs, parse_motion_control_job
 from .output_generator import save_generation_files
-from .profile_loader import load_active_profiles
+from .profile_loader import load_active_profile
 from .video_downloader import download_video
 from .processor import _apply_prompt_modifications
 
 
-def process_matrix_verbose(context: ProcessingContext) -> Dict[str, Any]:
+def process_files_verbose(context: ProcessingContext) -> Dict[str, Any]:
     """
-    Process video matrix with verbose terminal output.
+    Process video files with verbose terminal output.
 
     Args:
         context: ProcessingContext with all required paths and client
@@ -34,8 +34,8 @@ def process_matrix_verbose(context: ProcessingContext) -> Dict[str, Any]:
     """
     try:
         with VerboseContext() as verbose:
-            async_client, jobs, active_profiles, run_dir = _setup_processing(context)
-            results = _execute_video_batch(async_client, jobs, active_profiles, run_dir)
+            async_client, jobs, profile, run_dir = _setup_processing(context)
+            results = _execute_video_batch(async_client, jobs, profile, run_dir)
             return _generate_summary(results, run_dir)
     except Exception:
         return {"total": 0, "success": 0, "cost": 0.0, "output_dir": context.output_dir}
@@ -43,112 +43,100 @@ def process_matrix_verbose(context: ProcessingContext) -> Dict[str, Any]:
 
 def _setup_processing(
     context: ProcessingContext,
-) -> Tuple[AsyncReplicateClientEnhanced, List[MotionControlJob], List, Path]:
+) -> Tuple[AsyncReplicateClientEnhanced, List[MotionControlJob], Dict[str, Any], Path]:
     """Setup processing environment and discover inputs."""
     config = APIClientConfig(api_token=context.client.api_token, poll_interval=3)
     async_client = AsyncReplicateClientEnhanced(config=config)
 
-    log_stage_emoji("preparing", "Loading video profiles...")
-    active_profiles = load_active_profiles(context.profiles_dir)
-    logger.success(f"Loaded {len(active_profiles)} profiles")
+    log_stage_emoji("preparing", "Loading video profile...")
+    profile = load_active_profile(context.profiles_dir)
+    logger.success(f"Loaded profile: {profile['name']}")
 
     log_stage_emoji("preparing", "Discovering motion control jobs...")
 
-    custom_input_path = None
-    if active_profiles:
-        custom_input_path = active_profiles[0].get("custom_input_path")
+    custom_input_path = profile.get("custom_input_path")
 
     markdown_files = discover_motion_control_jobs(context.input_dir, custom_input_path)
     jobs = [parse_motion_control_job(md_file) for md_file in markdown_files]
     logger.success(f"Found {len(jobs)} motion control jobs")
 
-    timestamp = datetime.now().strftime("%y%m%d_%H%M%S")
-
-    custom_output_path = None
-    if active_profiles:
-        custom_output_path = active_profiles[0].get("custom_output_path")
-
-    base_output_dir = (
-        Path(custom_output_path) if custom_output_path else context.output_dir
+    run_dir = create_timestamped_directory(
+        context.output_dir, "MO-CONTROL", custom_output_path
     )
-
-    dir_name = f"{timestamp}_MO-CONTROL"
-    run_dir = base_output_dir / dir_name
-    run_dir.mkdir(parents=True, exist_ok=True)
     logger.info(f"📁 Output: {run_dir}")
 
-    return async_client, jobs, active_profiles, run_dir
+    return async_client, jobs, profile, run_dir
 
 
 def _execute_video_batch(
     async_client: AsyncReplicateClientEnhanced,
     jobs: List[MotionControlJob],
-    active_profiles: List,
+    profile: Dict[str, Any],
     run_dir: Path,
 ) -> Dict[str, Any]:
     """Execute batch video processing with epic progress tracking."""
-    total = len(jobs) * len(active_profiles)
+    total = len(jobs)
 
     epic_progress = VideoGenerationProgress()
 
     success_count = 0
     total_cost = 0.0
 
-    with epic_progress.track_generation(
-        total, title="Motion Control Video Generation"
-    ) as (
+    profile_name = profile["name"]
+    title = f"Processing {total} files with profile '{profile_name}'"
+
+    with epic_progress.track_generation(total, title=title) as (
         progress,
         main_task,
     ):
         for job in jobs:
-            for profile in active_profiles:
-                video_name = f"{job.markdown_file.stem}_X_{profile['name']}"
+            video_name = f"{job.markdown_file.stem}_X_{profile['name']}"
 
-                try:
-                    epic_progress.update_status(
-                        progress,
-                        main_task,
-                        status="Starting...",
-                        video_name=video_name,
-                        phase="Initializing",
-                    )
+            try:
+                epic_progress.update_status(
+                    progress,
+                    main_task,
+                    status="Starting...",
+                    video_name=video_name,
+                    phase="Initializing",
+                )
 
-                    video_context = VideoProcessingContext(
-                        client=async_client,
-                        prompt_file=job.markdown_file,
-                        image_url_file=job.markdown_file,
-                        num_frames_file=job.markdown_file,
-                        profile=profile,
-                        run_dir=run_dir,
-                        progress=progress,
-                        task_id=main_task,
-                    )
+                video_context = VideoProcessingContext(
+                    client=async_client,
+                    prompt_file=job.markdown_file,
+                    image_url_file=job.markdown_file,
+                    num_frames_file=job.markdown_file,
+                    profile=profile,
+                    run_dir=run_dir,
+                    progress=progress,
+                    task_id=main_task,
+                )
 
-                    video_cost = _process_video_verbose(
-                        video_context, job, epic_progress
-                    )
+                video_cost = _process_video_verbose(
+                    video_context, job, epic_progress
+                )
 
-                    success_count += 1
-                    total_cost += video_cost
+                success_count += 1
+                total_cost += video_cost
 
-                    epic_progress.mark_success(
-                        progress, main_task, video_name, video_cost
-                    )
+                epic_progress.mark_success(
+                    progress, main_task, video_name, video_cost
+                )
 
-                    progress.advance(main_task)
+                progress.advance(main_task)
 
-                    epic_progress.update_with_cost(
-                        progress,
-                        main_task,
-                        status="Complete",
-                        total_cost=total_cost,
-                        video_name=video_name,
-                    )
+                epic_progress.update_with_cost(
+                    progress,
+                    main_task,
+                    status="Complete",
+                    total_cost=total_cost,
+                    video_name=video_name,
+                )
 
-                except Exception as e:
-                    epic_progress.mark_error(progress, main_task, video_name, str(e))
-                    logger.exception(e)
-                    total_cost += 0.0
+            except Exception as e:
+                epic_progress.mark_error(progress, main_task, video_name, str(e))
+                logger.exception(e)
+                total_cost += 0.0
 
     return {
         "success_count": success_count,

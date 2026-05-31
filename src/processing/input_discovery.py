@@ -10,7 +10,7 @@ from ..models.triplet import MarkdownJob, MotionControlJob
 
 
 def discover_markdown_jobs(
-    input_dir: Path, custom_input_path: Optional[str] = None
+    input_dir: Path, custom_input_path: Optional[str] = None, job_type: str = "markdown"
 ) -> List[Path]:
     """
     Discover markdown job files in input directory.
@@ -18,6 +18,7 @@ def discover_markdown_jobs(
     Args:
         input_dir: Default input directory (USER-FILES/04.INPUT)
         custom_input_path: Optional custom input path from profile
+        job_type: Type label for log messages ("markdown" or "motion control")
 
     Returns:
         List of markdown file paths, naturally sorted
@@ -25,7 +26,6 @@ def discover_markdown_jobs(
     Raises:
         FileNotFoundError: If directory doesn't exist or no markdown files found
     """
-    # Use custom path if provided, otherwise use default input directory
     if custom_input_path:
         effective_input_dir = Path(custom_input_path)
         logger.info(f"Using custom input directory: {effective_input_dir}")
@@ -37,7 +37,6 @@ def discover_markdown_jobs(
             f"Input directory does not exist: {effective_input_dir}"
         )
 
-    # Get all markdown files
     markdown_files = list(effective_input_dir.glob("*.md"))
 
     if not markdown_files:
@@ -45,10 +44,9 @@ def discover_markdown_jobs(
             f"No markdown (.md) files found in {effective_input_dir}"
         )
 
-    # Natural sort for consistent ordering
     markdown_files = natsorted(markdown_files)
 
-    logger.info(f"Found {len(markdown_files)} markdown job files")
+    logger.info(f"Found {len(markdown_files)} {job_type} job files")
     for i, md_file in enumerate(markdown_files, 1):
         logger.debug(f"Job {i}: {md_file.name}")
 
@@ -135,44 +133,8 @@ def parse_markdown_job(markdown_file: Path) -> MarkdownJob:
 def discover_motion_control_jobs(
     input_dir: Path, custom_input_path: Optional[str] = None
 ) -> List[Path]:
-    """
-    Discover markdown job files in input directory for motion control.
-
-    Args:
-        input_dir: Default input directory (USER-FILES/04.INPUT)
-        custom_input_path: Optional custom input path from profile
-
-    Returns:
-        List of markdown file paths, naturally sorted
-
-    Raises:
-        FileNotFoundError: If directory doesn't exist or no markdown files found
-    """
-    if custom_input_path:
-        effective_input_dir = Path(custom_input_path)
-        logger.info(f"Using custom input directory: {effective_input_dir}")
-    else:
-        effective_input_dir = input_dir
-
-    if not effective_input_dir.exists():
-        raise FileNotFoundError(
-            f"Input directory does not exist: {effective_input_dir}"
-        )
-
-    markdown_files = list(effective_input_dir.glob("*.md"))
-
-    if not markdown_files:
-        raise FileNotFoundError(
-            f"No markdown (.md) files found in {effective_input_dir}"
-        )
-
-    markdown_files = natsorted(markdown_files)
-
-    logger.info(f"Found {len(markdown_files)} motion control job files")
-    for i, md_file in enumerate(markdown_files, 1):
-        logger.debug(f"Job {i}: {md_file.name}")
-
-    return markdown_files
+    """Discover motion control markdown job files."""
+    return discover_markdown_jobs(input_dir, custom_input_path, job_type="motion control")
 
 
 def parse_motion_control_job(markdown_file: Path) -> MotionControlJob:
